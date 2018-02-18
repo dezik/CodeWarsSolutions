@@ -4,12 +4,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ParseMolecule {
-    static Map<Character, Character> brackets = new HashMap<>();
-    static {
-        brackets.put('{', '}');
-        brackets.put('(', ')');
-        brackets.put('[', ']');
-    }
 
     public static Map<String, Integer> getAtoms(String formula) {
         Map<String, Integer> map = fillMapWithElements(formula);
@@ -30,30 +24,53 @@ public class ParseMolecule {
     }
 
     private static int insideOfBrackets(String str, String element) {
-        for (int i = str.indexOf(element); i > 0; i--) {
+        Map<Character, Character> brackets = new HashMap<>();
+        brackets.put('{', '}');
+        brackets.put('(', ')');
+        brackets.put('[', ']');
+        int startPosition = str.indexOf(element);
+        int multiplicator = getInitialMultiplicator(str, startPosition);
+        for (int i = startPosition - 1; i > 0; i--) {
+            boolean valid = false;
             if (brackets.containsKey(str.charAt(i))) {
-                for (int j = str.indexOf(element); j < str.length(); j++) {
-                    if (brackets.containsValue(str.charAt(j))) {
-                        if (j < str.length() - 1 && Character.isDigit(str.charAt(j + 1)))
-                            return Character.getNumericValue(str.charAt(j + 1));
-                        else return 1;
+                for (int j = startPosition + 1; j < str.length(); j++) {
+                    if (brackets.get(str.charAt(i)) == str.charAt(j)) {
+                        valid = true;
+                        if (j < str.length() - 1 && Character.isDigit(str.charAt(j + 1))) {
+                            multiplicator *= Character.getNumericValue(str.charAt(j + 1));
+                            break;
+                        }
                     }
                 }
-                throw new IllegalArgumentException();
+                if (!valid) throw new IllegalArgumentException();
             }
         }
-        return 1;
+        return multiplicator;
+    }
+
+    private boolean isValid(String str) {
+        return false;
+    }
+
+    private static int getInitialMultiplicator(String str, int startPosition) {
+        String initialMultiplicator = "";
+        for (int i = startPosition + 1; i < str.length(); i++) {
+            if (Character.isDigit(str.charAt(i))) initialMultiplicator += str.charAt(i);
+            else break;
+        }
+        return initialMultiplicator.length() == 0 ? 1 : Integer.parseInt(initialMultiplicator);
     }
 
     private static int getElementCount(String str, String element) {
-        int count = insideOfBrackets(str, element);
-        if (str.lastIndexOf(element) < str.length() - 1) {
-            char nextToElementChar = str.charAt(str.lastIndexOf(element) + 1);
-            if (Character.isDigit(nextToElementChar)) return Character.getNumericValue(nextToElementChar);
-        }
-        return count;
-    }
+        int out = 0;
+        while (str.contains(element)) {
+            out += insideOfBrackets(str, element);
+            str = str.replaceFirst(element, "");
 
+        }
+        return out;
+    }
+}
 
 //    public static Map<String, Integer> getAtoms(String formula) {
 //        Map<String, Integer> map = fillMapWithElements(formula);
@@ -96,4 +113,4 @@ public class ParseMolecule {
 //        }
 //        return count;
 //    }
-}
+
