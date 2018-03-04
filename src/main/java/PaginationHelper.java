@@ -4,8 +4,8 @@ import java.util.Map;
 
 public class PaginationHelper<I> {
     private Map<Integer, List<I>> pages = new HashMap<>();
-    private int itemsCount = -1;
-    private int itemsPerPage = -1;
+    private int itemsCount = 0;
+    private int itemsPerPage = 0;
 
     /**
      * The constructor takes in an array of items and a integer indicating how many
