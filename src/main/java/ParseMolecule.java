@@ -4,6 +4,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ParseMolecule {
+    static Map<Character, Character> brackets = new HashMap<>();
+
+    static {
+        brackets.put('{', '}');
+        brackets.put('(', ')');
+        brackets.put('[', ']');
+    }
 
     public static Map<String, Integer> getAtoms(String formula) {
         Map<String, Integer> map = fillMapWithElements(formula);
@@ -24,12 +31,8 @@ public class ParseMolecule {
     }
 
     private static int insideOfBrackets(String str, String element) {
-        Map<Character, Character> brackets = new HashMap<>();
-        brackets.put('{', '}');
-        brackets.put('(', ')');
-        brackets.put('[', ']');
         int startPosition = str.indexOf(element);
-        int multiplicator = getInitialMultiplicator(str, startPosition);
+        int multiplicand = getInitialMultiplicand(str, startPosition);
         for (int i = startPosition - 1; i > 0; i--) {
             boolean valid = false;
             if (brackets.containsKey(str.charAt(i))) {
@@ -37,7 +40,7 @@ public class ParseMolecule {
                     if (brackets.get(str.charAt(i)) == str.charAt(j)) {
                         valid = true;
                         if (j < str.length() - 1 && Character.isDigit(str.charAt(j + 1))) {
-                            multiplicator *= Character.getNumericValue(str.charAt(j + 1));
+                            multiplicand *= Character.getNumericValue(str.charAt(j + 1));
                             break;
                         }
                     }
@@ -45,20 +48,16 @@ public class ParseMolecule {
                 if (!valid) throw new IllegalArgumentException();
             }
         }
-        return multiplicator;
+        return multiplicand;
     }
 
-    private boolean isValid(String str) {
-        return false;
-    }
-
-    private static int getInitialMultiplicator(String str, int startPosition) {
-        String initialMultiplicator = "";
+    private static int getInitialMultiplicand(String str, int startPosition) {
+        String initialMultiplicand = "";
         for (int i = startPosition + 1; i < str.length(); i++) {
-            if (Character.isDigit(str.charAt(i))) initialMultiplicator += str.charAt(i);
+            if (Character.isDigit(str.charAt(i))) initialMultiplicand += str.charAt(i);
             else break;
         }
-        return initialMultiplicator.length() == 0 ? 1 : Integer.parseInt(initialMultiplicator);
+        return initialMultiplicand.length() == 0 ? 1 : Integer.parseInt(initialMultiplicand);
     }
 
     private static int getElementCount(String str, String element) {
@@ -66,7 +65,6 @@ public class ParseMolecule {
         while (str.contains(element)) {
             out += insideOfBrackets(str, element);
             str = str.replaceFirst(element, "");
-
         }
         return out;
     }
